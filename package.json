@@ -1,5 +1,6 @@
 {
-  "name": "performance-dashboard",
+  "name": "performance-monitor",
+  "private": true,
   "version": "1.0.0",
   "description": "A dashboard for monitoring Artsy's performance",
   "main": "index.js",
