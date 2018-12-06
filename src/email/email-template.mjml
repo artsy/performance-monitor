@@ -1,0 +1,143 @@
+<mjml>
+  <mj-body background-color="white">
+
+    <mj-section>
+      <mj-column>
+        <mj-image src="<%= logo %>" align="left" width="100px" alt="" />
+      </mj-column>
+    </mj-section>
+
+    <mj-section>
+      <mj-column>
+        <mj-text font-family="TimesNewRomanPSMT" font-size="22px" line-height="28px">
+          Artsy web performance report
+        </mj-text>
+        <mj-text color="#666666">
+          <%= dateRange %>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section>
+      <mj-column>
+        <mj-divider border-color="#e5e5e5" border-width="1px" />
+      </mj-column>
+    </mj-section>
+
+    <mj-section>
+      <mj-column>
+        <mj-text font-family="TimesNewRomanPSMT" font-size="22px" line-height="28px">
+          Overall performance scores by page (mobile)
+        </mj-text>
+        <mj-text font-family="TimesNewRomanPSMT" font-size="16px" line-height="20px">
+          These scores reflect Google's lighthouse performance score. It gives a high level indicator of overall performance.
+          Our mobile scores are reported fairly low, so let's dig into that a little. First, these performance tests are ran on
+          a mid-tier device (slower than our average user's) with a 3G connection (also slower than our average user's connection).
+          For this reason these numbers are artificially low for the average case, but a good representation of what someone with
+          a slower device or poor connection would experience.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section text-align="left">
+      <mj-column width="20px">
+        <mj-text font-size="27px" color="#F7625A" line-height="9px">
+          ●
+        </mj-text>
+      </mj-column>
+      <mj-column width="80px">
+        <mj-text>
+          0-49
+        </mj-text>
+      </mj-column>
+      <mj-column width="20px">
+        <mj-text font-size="27px" color="#F1AF1B" line-height="9px">
+          ●
+        </mj-text>
+      </mj-column>
+      <mj-column width="85px">
+        <mj-text>
+          50-89
+        </mj-text>
+      </mj-column>
+      <mj-column width="20px">
+        <mj-text font-size="27px" color="#0EDA83" line-height="9px">
+          ●
+        </mj-text>
+      </mj-column>
+      <mj-column width="100px">
+        <mj-text>
+          90-100
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <% _.chunk(pages, 3).forEach(group=> { %>
+    <mj-section padding-left="10px">
+      <mj-column background-color="#f8f8f8" border-right="10px solid white">
+        <mj-text font-size="16px" padding-top="15px" align="center">
+          <%= group[0].name %>
+        </mj-text>
+        <mj-image src="<%= group[0].img %>" alt="Score" padding-bottom="20px" />
+      </mj-column>
+
+      <% if(group.length> 1) { %>
+      <mj-column background-color="#f8f8f8" border-right="10px solid white">
+        <mj-text font-size="16px" padding-top="15px" align="center">
+          <%= group[1].name %>
+        </mj-text>
+        <mj-image src="<%= group[1].img %>" alt="Score" padding-bottom="20px" />
+      </mj-column>
+      <% } else { %>
+      <mj-column></mj-column>
+      <% } %>
+
+      <% if(group.length> 2) { %>
+      <mj-column background-color="#f8f8f8" border-right="10px solid white">
+        <mj-text font-size="16px" padding-top="15px" align="center">
+          <%= group[2].name %>
+        </mj-text>
+        <mj-image src="<%= group[2].img %>" alt="Score" padding-bottom="20px" />
+      </mj-column>
+      <% } else { %>
+      <mj-column></mj-column>
+      <% } %>
+    </mj-section>
+    <% }); %>
+
+    <mj-section>
+      <mj-column>
+        <mj-divider border-color="#e5e5e5" border-width="1px" />
+      </mj-column>
+    </mj-section>
+
+
+    <mj-section>
+      <mj-column>
+        <mj-text font-family="TimesNewRomanPSMT" font-size="22px" line-height="28px">
+          Performance breakdown by page
+        </mj-text>
+        <mj-text color="#666666">
+          ▲ Industry standard benchmark
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <% pages.forEach(page => { %>
+    <mj-section>
+      <mj-column>
+        <mj-text font-size="22px" font-family="TimesNewRomanPSMT">
+          <%= page.name %>
+        </mj-text>
+        <% page.metrics.forEach(metric => { %>
+        <mj-text>
+          <%= metric.label %>
+        </mj-text>
+        <mj-image src="<%= metric.img %>" alt="<%= metric.label %> scored <%= metric.average %>" />
+        <% }) %>
+      </mj-column>
+    </mj-section>
+    <% }) %>
+
+  </mj-body>
+</mjml>

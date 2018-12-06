@@ -1,0 +1,45 @@
+{
+  "name": "performance-dashboard",
+  "version": "1.0.0",
+  "description": "A dashboard for monitoring Artsy's performance",
+  "main": "index.js",
+  "repository": "https://github.com/artsy/performance-dashboard",
+  "author": "Zephraph <zephraph@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "parcel src/dashboard/index.html --port 5000",
+    "gen-email": "ts-node --files src/email/generate-email.tsx"
+  },
+  "devDependencies": {
+    "@artsy/palette": "^2.21.3",
+    "@types/lowdb": "^1.0.6",
+    "@types/mjml": "^4.0.1",
+    "@types/react": "^16.7.7",
+    "@types/react-dom": "^16.0.10",
+    "@types/styled-components": "^4.1.1",
+    "@types/styled-system": "^3.0.9",
+    "lowdb": "^1.0.0",
+    "mjml": "^4.2.0",
+    "parcel": "^1.10.3",
+    "repng": "^3.1.0",
+    "run.env": "^1.1.0",
+    "svg-to-img": "^2.0.7",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.1.6"
+  },
+  "dependencies": {
+    "components": "^0.1.0",
+    "date-fns": "^1.29.0",
+    "lodash": "^4.17.11",
+    "moving-average": "^1.0.0",
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
+    "styled-components": "^4.1.1",
+    "styled-system": "^3.1.11"
+  },
+  "alias": {
+    "components": "./src/components",
+    "dashboard": "./src/dashboard",
+    "email": "./src/email"
+  }
+}
