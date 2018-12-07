@@ -15,9 +15,16 @@ import Stats from "moving-average";
 import { Color } from "@artsy/palette";
 import { Gauge, GaugeProps } from "../components/Gauge";
 import { MetricBar, MetricBarProps } from "../components/MetricBar";
+import S3 from "aws-sdk/clients/s3";
+import uploadStream from "s3-stream-upload";
+
+let outputDir = "dist";
+let BUCKET_FOLDER = "";
+let BUCKET = "artsy-performance-dashboard";
 
 const read = promisify(readFile);
 const write = promisify(writeFile);
+const s3 = new S3();
 
 const adapter = new FileSync(join(process.cwd(), "data", "snapshot-db.json"));
 const db = low(adapter);
@@ -171,9 +178,14 @@ const getDateRange = (weeks: number = 2) => {
     .map(s => s.createdAt)
     .filter(date => differenceInWeeks(new Date(), date) < weeks)
     .value();
+  const lastDate = otherDates.pop();
   console.log("first date", firstDate);
-  console.log("lastDate", otherDates.slice(-1)[0]);
-  return `${d(firstDate)}—${d(otherDates.slice(-1)[0])}`;
+  console.log("last date", lastDate);
+  return {
+    firstDate,
+    lastDate,
+    dateRange: `${d(firstDate)}—${d(lastDate)}`
+  };
 };
 
 const getSiteMetrics = (sitePattern: string, device: "desktop" | "mobile") => {
@@ -192,7 +204,21 @@ const renderGauge = async (score: number, filename: string) => {
     },
     width: size,
     height: size
-  }).then((img: any) => img.pipe(outFile));
+  }).then((img: any) =>
+    img
+      .pipe(
+        BUCKET
+          ? uploadStream(s3, {
+              Bucket: BUCKET,
+              Key: BUCKET_FOLDER + filename,
+              ACL: "public-read"
+            })
+          : outFile
+      )
+      .on("error", (err: Error) => {
+        console.error(`Failed to upload ${filename} to S3.`, err);
+      })
+  );
 };
 
 // @ts-ignore
@@ -219,7 +245,21 @@ const renderMetricBar = (metric: any) => {
       width: 600,
       height: 60
     })
-  ).then((img: any) => img.pipe(outFile));
+  ).then((img: any) =>
+    img
+      .pipe(
+        BUCKET
+          ? uploadStream(s3, {
+              Bucket: BUCKET,
+              Key: BUCKET_FOLDER + filename,
+              ACL: "public-read"
+            })
+          : outFile
+      )
+      .on("error", (err: Error) => {
+        console.error(`Failed to upload ${filename} to S3.`, err);
+      })
+  );
 
   return filename;
 };
@@ -262,7 +302,10 @@ const renderMetricBar = (metric: any) => {
     })
   );
 
-  const dateRange = getDateRange();
+  const { dateRange, firstDate, lastDate } = getDateRange();
+
+  const f = (date: any) => format(date, "DD-MM-YYYY");
+  BUCKET_FOLDER = `${f(firstDate)}_${f(lastDate)}/`;
 
   const mjmlTemplate = template(
     await read(join(__dirname, "email-template.mjml"), "utf-8")
@@ -272,8 +315,6 @@ const renderMetricBar = (metric: any) => {
   const artworkPage = getSiteMetrics("artwork/", "mobile");
   const articlePage = getSiteMetrics("article/", "mobile");
 
-  console.log("SCORE", artistPage);
-  // artistPage["lighthouse-performance-score"].average
   renderGauge(
     artistPage["lighthouse-performance-score"].average,
     "artist-gauge.png"
@@ -305,10 +346,8 @@ const renderMetricBar = (metric: any) => {
       .value();
 
   const finalTemplate = mjmlTemplate({
-    logo: join(
-      relative(join(process.cwd(), "dist"), join(__dirname, "../assets")),
-      "Artsy_Logo_Full_Black_Jpeg_Small.jpg"
-    ),
+    url: BUCKET ? `https://s3.amazonaws.com/${BUCKET}/${BUCKET_FOLDER}` : "",
+    logo: `https://s3.amazonaws.com/${BUCKET}/Artsy_Logo_Full_Black_Jpeg_Small.jpg`,
     redDot: "red-dot.png",
     greenDot: "green-dot.png",
     yellowDot: "yellow-dot.png",

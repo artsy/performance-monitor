@@ -16,11 +16,12 @@
           <%= dateRange %>
         </mj-text>
         <mj-text font-family="TimesNewRomanPSMT" font-size="16px" line-height="20px">
-          Welcome to Artsy's bi-weekly web performance report. The purpose of this communication is to inform
-          and build a shared understanding around performance at Artsy. In 2017 Google performed a <a src="https://www.thinkwithgoogle.com/marketing-resources/data-measurement/mobile-page-speed-new-industry-benchmarks/">study</a> that
-          concluded at a page load time of 3 seconds the probability bounce increases by 32%. At 5 seconds it goes
-          up to <i>90%</i>. By 10 seconds the probability of a user bouncing is 123%. Decreasing the probability of
-          our users leaving due to performance delays is critical to increasing user engagement.
+          Welcome to Artsy's bi-weekly web performance report. The purpose of this communication is to
+          build a culture and provide transparency around the state of performance at Artsy. In 2017 Google performed
+          a study<sup style="font-weight: bold; font-size: 12px;">1</sup> that concluded at a page load time of 3 seconds
+          the probability bounce increases by 32%. At 5 seconds it goes up to <i>90%</i>. By 10 seconds the probability of
+          a user bouncing is 123%. Decreasing the probability of our users leaving due to performance delays is critical
+          to increasing user engagement.
         </mj-text>
       </mj-column>
     </mj-section>
@@ -38,77 +39,48 @@
         </mj-text>
         <mj-text font-family="TimesNewRomanPSMT" font-size="16px" line-height="20px">
           These scores reflect Google's lighthouse performance score measured against a mid-ranged mobile device on a 3G network.
-          While our average user connects via a 3G connection, Google still measures mobile speeds via 3G connections. They project that
-          <a src="https://www.thinkwithgoogle.com/data/cellular-network-connections-slow-speeds/?_ga=2.229751957.863865557.1544147317-1415806045.1544147317">70% of global connections will be 3G until 2020</a>.
+          While our average user connects via a 4G connection, Google still measures mobile speeds via 3G connections. They project
+          that 70% of global connections will be 3G until 2020<sup style="font-weight: bold; font-size: 12px">2</sup>.
           For this reason these numbers are low for our average case, but a good representation of what someone with
           a slower device or poor connection would experience.
         </mj-text>
       </mj-column>
     </mj-section>
 
-    <mj-section text-align="left">
-      <mj-column width="20px">
-        <mj-text font-size="27px" color="#F7625A" line-height="9px">
-          ●
-        </mj-text>
-      </mj-column>
-      <mj-column width="80px">
-        <mj-text>
-          0-49
-        </mj-text>
-      </mj-column>
-      <mj-column width="20px">
-        <mj-text font-size="27px" color="#F1AF1B" line-height="9px">
-          ●
-        </mj-text>
-      </mj-column>
-      <mj-column width="85px">
-        <mj-text>
-          50-89
-        </mj-text>
-      </mj-column>
-      <mj-column width="20px">
-        <mj-text font-size="27px" color="#0EDA83" line-height="9px">
-          ●
-        </mj-text>
-      </mj-column>
-      <mj-column width="100px">
-        <mj-text>
-          90-100
-        </mj-text>
-      </mj-column>
-    </mj-section>
-
     <% _.chunk(pages, 3).forEach(group=> { %>
     <mj-section padding-left="10px">
-      <mj-column background-color="#f8f8f8" border-right="10px solid white">
-        <mj-text font-size="16px" padding-top="15px" align="center">
-          <%= group[0].name %>
-        </mj-text>
-        <mj-image src="<%= group[0].img %>" alt="Score" padding-bottom="20px" />
-      </mj-column>
+      <mj-group>
 
-      <% if(group.length> 1) { %>
-      <mj-column background-color="#f8f8f8" border-right="10px solid white">
-        <mj-text font-size="16px" padding-top="15px" align="center">
-          <%= group[1].name %>
-        </mj-text>
-        <mj-image src="<%= group[1].img %>" alt="Score" padding-bottom="20px" />
-      </mj-column>
-      <% } else { %>
-      <mj-column></mj-column>
-      <% } %>
+        <mj-column background-color="#f8f8f8" border-right="10px solid white" border-bottom="10px solid white" padding-bottom="10px">
+          <mj-text font-size="16px" padding-top="15px" align="center">
+            <%= group[0].name %>
+          </mj-text>
+          <mj-image src="<%= url %><%= group[0].img %>" alt="Score" padding-bottom="20px" />
+        </mj-column>
 
-      <% if(group.length> 2) { %>
-      <mj-column background-color="#f8f8f8" border-right="10px solid white">
-        <mj-text font-size="16px" padding-top="15px" align="center">
-          <%= group[2].name %>
-        </mj-text>
-        <mj-image src="<%= group[2].img %>" alt="Score" padding-bottom="20px" />
-      </mj-column>
-      <% } else { %>
-      <mj-column></mj-column>
-      <% } %>
+        <% if(group.length> 1) { %>
+        <mj-column background-color="#f8f8f8" border-right="10px solid white" border-bottom="10px solid white" padding-bottom="10px">
+          <mj-text font-size="16px" padding-top="15px" align="center">
+            <%= group[1].name %>
+          </mj-text>
+          <mj-image src="<%= url %><%= group[1].img %>" alt="Score" padding-bottom="20px" />
+        </mj-column>
+        <% } else { %>
+        <mj-column></mj-column>
+        <% } %>
+
+        <% if(group.length> 2) { %>
+        <mj-column background-color="#f8f8f8" border-right="10px solid white" border-bottom="10px solid white" padding-bottom="10px">
+          <mj-text font-size="16px" padding-top="15px" align="center">
+            <%= group[2].name %>
+          </mj-text>
+          <mj-image src="<%= url %><%= group[2].img %>" alt="Score" padding-bottom="20px" />
+        </mj-column>
+        <% } else { %>
+        <mj-column></mj-column>
+        <% } %>
+
+      </mj-group>
     </mj-section>
     <% }); %>
 
@@ -123,6 +95,13 @@
       <mj-column>
         <mj-text font-family="TimesNewRomanPSMT" font-size="22px" line-height="28px">
           Performance breakdown by page
+        </mj-text>
+        <mj-text font-family="TimesNewRomanPSMT" font-size="16px" line-height="20px">
+          The detailed breakdown focuses on three specific metrics. <b>First contentful paint</b>
+          is how fast the first image or piece of text renders on the screen. <b>First meaningful paint</b>
+          communicates when the things we care about (headline text, images, other above the fold content) renders.
+          This is the point at which the page starts providing useful context or value to the user. Lastly, <b>speed index</b>
+          describes how long it feels like it takes the page to become visually complete.
         </mj-text>
         <mj-text color="#666666">
           ▼ Performance goal
@@ -140,7 +119,7 @@
         <mj-text font-family="HelveticaNeue" font-size="14px">
           <%= _.capitalize(metric.label) %>
         </mj-text>
-        <mj-image src="<%= metric.img %>" alt="<%= metric.label %> scored <%= metric.average %>" />
+        <mj-image src="<%= url %><%= metric.img %>" alt="<%= metric.label %> scored <%= metric.average %>" />
         <% }) %>
       </mj-column>
     </mj-section>
@@ -154,6 +133,12 @@
 
     <mj-section padding-bottom="40px">
       <mj-column>
+        <mj-text>
+          [1]: https://www.thinkwithgoogle.com/marketing-resources/data-measurement/mobile-page-speed-new-industry-benchmarks/
+        </mj-text>
+        <mj-text>
+          [2]: https://www.thinkwithgoogle.com/data/cellular-network-connections-slow-speeds/
+        </mj-text>
         <mj-text font-family="HelveticaNeue" font-size="14px" align="center">
           Questions? Join us in <u>#performance</u>.
         </mj-text>
