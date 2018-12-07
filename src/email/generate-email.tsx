@@ -32,22 +32,25 @@ if (!(process.env.PATH || "").includes("./node_modules/.bin")) {
 
 const METRICS = [
   {
-    name: "speed_index",
+    name: "first-contentful-paint",
     top: 0,
-    mid: 2200,
-    low: 5500
+    mid: 2350,
+    low: 4000,
+    goal: 2000
   },
   {
     name: "first-meaningful-paint",
     top: 0,
     mid: 2350,
-    low: 4000
+    low: 4000,
+    goal: 2500
   },
   {
-    name: "first-contentful-paint",
+    name: "speed_index",
     top: 0,
-    mid: 2350,
-    low: 4000
+    mid: 2200,
+    low: 5800,
+    goal: 3000
   }
 ];
 const DOT_SIZE = 10;
@@ -105,9 +108,13 @@ const fetchResults = (page: string) => {
     .value();
 };
 
-const calculateAverage = (results: any, device: "desktop" | "mobile") => {
+const calculateAverage = (
+  results: any,
+  device: "desktop" | "mobile" | "mobile4g"
+) => {
   const firstDate = results[0].createdAt;
-  const deviceString = device === "desktop" ? "desktop" : "3g";
+  const deviceString =
+    device === "desktop" ? "desktop" : device === "mobile" ? "3g" : "4g";
   return chain(results)
     .map(r =>
       r.measurements.map((m: any) => ({
@@ -206,10 +213,11 @@ const renderMetricBar = (metric: any) => {
           mid: metric.mid,
           low: metric.low
         },
+        goal: metric.goal,
         width: 600
       },
       width: 600,
-      height: 40
+      height: 60
     })
   ).then((img: any) => img.pipe(outFile));
 
@@ -282,17 +290,19 @@ const renderMetricBar = (metric: any) => {
   console.log(artistPage);
 
   const formatMetrics = (page: string, pageMetrics: Array<{ name: string }>) =>
-    Object.values(pageMetrics)
+    chain(Object.values(pageMetrics))
       .filter(metric => metric.name !== "lighthouse-performance-score")
-      .map(metric => ({
+      .sortBy(["name"])
+      .map((metric: any) => ({
         page,
         ...metric,
         ...METRICS.find(({ name }) => name === metric.name)
       }))
-      .map(metric => ({
+      .map((metric: any) => ({
         ...metric,
         img: renderMetricBar(metric)
-      }));
+      }))
+      .value();
 
   const finalTemplate = mjmlTemplate({
     logo: join(

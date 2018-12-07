@@ -25,7 +25,7 @@ const Header = styled.span`
 export interface MetricBarProps extends SpaceProps {
   metric?: string;
   value: number;
-  goal?: string;
+  goal?: number;
   delta?: string;
   range: {
     top: number;
@@ -56,18 +56,18 @@ export const MetricBar = ({
       {metric && <Header>{metric}</Header>}
       <Flex alignItems="center" paddingTop={3}>
         <Bar
-          height="30px"
-          width={widthRatio(value, bottom)}
+          height="34px"
+          width={`calc(${widthRatio(value, bottom)} - 8px)`}
           alignItems="center"
           justifyContent="flex-end"
-          pr={1}
+          pr={2}
           pt="1pt"
         >
           {value.toLocaleString()}
           {units ? ` ${units}` : ""}
         </Bar>
         {delta && (
-          <Box ml={1} color={deltaColor(delta)}>
+          <Box ml={1} style={{ fontWeight: "bold" }} color={deltaColor(delta)}>
             {delta}
           </Box>
         )}
@@ -81,7 +81,7 @@ export const MetricBar = ({
         <Box
           height="2px"
           bg={color("yellow100")}
-          width={widthRatio(range.low - range.top, bottom)}
+          width={widthRatio(range.low - range.mid, bottom)}
         />
         <Box
           height="2px"
@@ -89,6 +89,20 @@ export const MetricBar = ({
           width={widthRatio(bottom - range.low, bottom)}
         />
       </Flex>
+      {goal && (
+        <Flex mt="-12px">
+          <Box width={widthRatio(goal, bottom)} />
+          <Flex ml="-4px" flexDirection="column">
+            <Box style={{ fontSize: "12px", transform: "scale(1.1, 0.7)" }}>
+              ▼
+            </Box>
+            <Box style={{ color: color("black60") }} pt={1}>
+              {goal.toLocaleString()}
+              {units ? ` ${units}` : ""}
+            </Box>
+          </Flex>
+        </Flex>
+      )}
     </Box>
   );
 };

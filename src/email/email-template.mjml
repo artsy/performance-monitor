@@ -3,7 +3,7 @@
 
     <mj-section>
       <mj-column>
-        <mj-image src="<%= logo %>" align="left" width="100px" alt="" />
+        <mj-image src="<%= logo %>" align="left" width="100px" alt="Artsy" />
       </mj-column>
     </mj-section>
 
@@ -12,8 +12,15 @@
         <mj-text font-family="TimesNewRomanPSMT" font-size="22px" line-height="28px">
           Artsy web performance report
         </mj-text>
-        <mj-text color="#666666">
+        <mj-text font-family="HelveticaNeue" font-size="14px" color="#666666">
           <%= dateRange %>
+        </mj-text>
+        <mj-text font-family="TimesNewRomanPSMT" font-size="16px" line-height="20px">
+          Welcome to Artsy's bi-weekly web performance report. The purpose of this communication is to inform
+          and build a shared understanding around performance at Artsy. In 2017 Google performed a <a src="https://www.thinkwithgoogle.com/marketing-resources/data-measurement/mobile-page-speed-new-industry-benchmarks/">study</a> that
+          concluded at a page load time of 3 seconds the probability bounce increases by 32%. At 5 seconds it goes
+          up to <i>90%</i>. By 10 seconds the probability of a user bouncing is 123%. Decreasing the probability of
+          our users leaving due to performance delays is critical to increasing user engagement.
         </mj-text>
       </mj-column>
     </mj-section>
@@ -27,13 +34,13 @@
     <mj-section>
       <mj-column>
         <mj-text font-family="TimesNewRomanPSMT" font-size="22px" line-height="28px">
-          Overall performance scores by page (mobile)
+          Overall performance scores by page
         </mj-text>
         <mj-text font-family="TimesNewRomanPSMT" font-size="16px" line-height="20px">
-          These scores reflect Google's lighthouse performance score. It gives a high level indicator of overall performance.
-          Our mobile scores are reported fairly low, so let's dig into that a little. First, these performance tests are ran on
-          a mid-tier device (slower than our average user's) with a 3G connection (also slower than our average user's connection).
-          For this reason these numbers are artificially low for the average case, but a good representation of what someone with
+          These scores reflect Google's lighthouse performance score measured against a mid-ranged mobile device on a 3G network.
+          While our average user connects via a 3G connection, Google still measures mobile speeds via 3G connections. They project that
+          <a src="https://www.thinkwithgoogle.com/data/cellular-network-connections-slow-speeds/?_ga=2.229751957.863865557.1544147317-1415806045.1544147317">70% of global connections will be 3G until 2020</a>.
+          For this reason these numbers are low for our average case, but a good representation of what someone with
           a slower device or poor connection would experience.
         </mj-text>
       </mj-column>
@@ -118,7 +125,7 @@
           Performance breakdown by page
         </mj-text>
         <mj-text color="#666666">
-          ▲ Industry standard benchmark
+          ▼ Performance goal
         </mj-text>
       </mj-column>
     </mj-section>
@@ -130,14 +137,28 @@
           <%= page.name %>
         </mj-text>
         <% page.metrics.forEach(metric => { %>
-        <mj-text>
-          <%= metric.label %>
+        <mj-text font-family="HelveticaNeue" font-size="14px">
+          <%= _.capitalize(metric.label) %>
         </mj-text>
         <mj-image src="<%= metric.img %>" alt="<%= metric.label %> scored <%= metric.average %>" />
         <% }) %>
       </mj-column>
     </mj-section>
     <% }) %>
+
+    <mj-section>
+      <mj-column>
+        <mj-divider border-color="#e5e5e5" border-width="1px" />
+      </mj-column>
+    </mj-section>
+
+    <mj-section padding-bottom="40px">
+      <mj-column>
+        <mj-text font-family="HelveticaNeue" font-size="14px" align="center">
+          Questions? Join us in <u>#performance</u>.
+        </mj-text>
+      </mj-column>
+    </mj-section>
 
   </mj-body>
 </mjml>

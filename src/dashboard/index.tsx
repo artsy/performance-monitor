@@ -15,12 +15,6 @@ const SubHeading = styled.p`
   color: ${color("black60")};
 `;
 
-const metricRange = {
-  top: 0,
-  mid: 2000,
-  low: 5000
-};
-
 const App = () => (
   <Box fontFamily="sans-serif" textAlign="center">
     <Heading>Artsy Web Performance Report</Heading>
@@ -34,21 +28,29 @@ const App = () => (
     <Flex flexDirection="column" alignItems="center">
       <MetricBar
         metric="Speed index"
-        range={metricRange}
-        value={5000}
+        range={{
+          top: 0,
+          mid: 2200,
+          low: 5500
+        }}
+        value={6000}
         my={2}
         width="800px"
         delta="-8%"
-        goal="2,000"
+        goal={2200}
       />
       <MetricBar
         metric="First contentful paint"
-        range={metricRange}
-        value={8000}
+        range={{
+          top: 0,
+          mid: 2350,
+          low: 4000
+        }}
+        value={2350}
         marginY="20px"
         width="800px"
         delta="+12%"
-        goal="1,000 milliseconds (1 second)"
+        goal={2350}
       />
     </Flex>
   </Box>
