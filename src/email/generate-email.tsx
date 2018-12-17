@@ -1,6 +1,6 @@
 import React from "react";
 import { promisify } from "util";
-import { exec as execSync } from "child_process";
+import { spawn } from "child_process";
 import low from "lowdb";
 import FileSync from "lowdb/adapters/FileSync";
 import { differenceBy, chain, template } from "lodash";
@@ -8,7 +8,6 @@ import { join, relative } from "path";
 import differenceInWeeks from "date-fns/difference_in_weeks";
 import format from "date-fns/format";
 import getTime from "date-fns/get_time";
-import mjml from "mjml";
 import { writeFile, readFile, createWriteStream } from "fs";
 import repng from "repng";
 import Stats from "moving-average";
@@ -30,8 +29,6 @@ const adapter = new FileSync(join(process.cwd(), "data", "snapshot-db.json"));
 const db = low(adapter);
 
 db.defaults({ snapshots: [] }).write();
-
-const exec = promisify(execSync);
 
 if (!(process.env.PATH || "").includes("./node_modules/.bin")) {
   process.env.PATH = `${process.env.PATH}:./node_modules/.bin`;
@@ -70,6 +67,13 @@ interface CalibreSnapshotStatus {
   status: string;
 }
 
+interface CalibreSnapshotData {
+  snapshot: {
+    tests: Array<{ testProfile: { id: string } }>;
+  };
+  testProfiles: Array<{ id: string }>;
+}
+
 const defaultCalibreOptions: CalibreOptions = {
   json: true,
   site: "artsy-net"
@@ -82,20 +86,44 @@ const calibre = (
   args: string,
   { json, site }: CalibreOptions = defaultCalibreOptions
 ) =>
-  exec(
-    ["run.env", "calibre", args, "--site", site, json ? "--json" : ""].join(
-      " "
-    ),
-    {
+  new Promise((resolve, reject) => {
+    const cmd = `run.env calibre ${args} --site ${site} ${
+      json ? "--json" : ""
+    }`.split(" ");
+
+    const calibreProcess = spawn(cmd[0], cmd.slice(1), {
       cwd: process.cwd(),
       env: process.env
-    }
-  ).then(({ stdout }) => (json ? JSON.parse(stdout) : stdout));
+    });
 
-const fetchSnapshots = () => calibre(`site snapshots`);
+    let results = "";
+    let error = "";
+
+    calibreProcess.stdout.on("data", data => {
+      results += data;
+    });
+
+    calibreProcess.stderr.on("data", data => {
+      error += data;
+    });
+
+    calibreProcess.on("close", code => {
+      if (code !== 0 || error.length > 0) {
+        console.error(cmd, "failed with ", code, error);
+        reject(error);
+      } else {
+        resolve(json ? JSON.parse(results) : results);
+      }
+    });
+  });
+
+const fetchSnapshots = () =>
+  calibre(`site snapshots`) as Promise<CalibreSnapshotStatus[]>;
 
 const fetchSnapshotData = (snapshotId: number) =>
-  calibre(`site get-snapshot-metrics --snapshot ${snapshotId}`);
+  calibre(`site get-snapshot-metrics --snapshot ${snapshotId}`) as Promise<
+    CalibreSnapshotData
+  >;
 
 const fetchResults = (page: string) => {
   return db
@@ -266,25 +294,21 @@ const renderMetricBar = (metric: any) => {
 
 // Work closure
 (async () => {
+  console.log("fetching new snapshots...");
   const newSnapshots = (differenceBy(
     await fetchSnapshots(),
     db.get("snapshots").value(),
     "iid"
   ) as unknown) as CalibreSnapshotStatus[];
+  console.log(`Found ${newSnapshots.length} new snapshots`);
 
   await Promise.all(
     newSnapshots.map(async snapshot => {
-      let snapshotData: {
-        snapshot: {
-          tests: Array<{ testProfile: { id: string } }>;
-        };
-        testProfiles: Array<{ id: string }>;
-      };
-
+      let snapshotData: CalibreSnapshotData;
       try {
         snapshotData = await fetchSnapshotData(snapshot.iid);
-      } catch {
-        console.error(`Failed to fetch snapshot ${snapshot.iid}`);
+      } catch (err) {
+        console.error(`Failed to fetch snapshot ${snapshot.iid}`, err);
         return;
       }
 
