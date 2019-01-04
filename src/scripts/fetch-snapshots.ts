@@ -2,7 +2,7 @@ import low from "lowdb";
 import FileSync from "lowdb/adapters/FileSync";
 import { join } from "path";
 import { differenceBy } from "lodash";
-import { spawn } from "child_process";
+import { calibre } from "../lib/calibre";
 
 const adapter = new FileSync(join(process.cwd(), "data", "snapshot-db.json"));
 const db = low(adapter);
@@ -23,49 +23,6 @@ interface CalibreSnapshotData {
   };
   testProfiles: Array<{ id: string }>;
 }
-
-const defaultCalibreOptions: CalibreOptions = {
-  json: true,
-  site: "artsy-net"
-};
-interface CalibreOptions {
-  json?: boolean;
-  site?: string;
-}
-const calibre = (
-  args: string,
-  { json, site }: CalibreOptions = defaultCalibreOptions
-) =>
-  new Promise((resolve, reject) => {
-    const cmd = `run.env calibre ${args} --site ${site} ${
-      json ? "--json" : ""
-    }`.split(" ");
-
-    const calibreProcess = spawn(cmd[0], cmd.slice(1), {
-      cwd: process.cwd(),
-      env: process.env
-    });
-
-    let results = "";
-    let error = "";
-
-    calibreProcess.stdout.on("data", data => {
-      results += data;
-    });
-
-    calibreProcess.stderr.on("data", data => {
-      error += data;
-    });
-
-    calibreProcess.on("close", code => {
-      if (code !== 0 || error.length > 0) {
-        console.error(cmd, "failed with ", code, error);
-        reject(error);
-      } else {
-        resolve(json ? JSON.parse(results) : results);
-      }
-    });
-  });
 
 const fetchSnapshots = () =>
   calibre(`site snapshots`) as Promise<CalibreSnapshotStatus[]>;

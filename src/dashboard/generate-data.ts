@@ -4,6 +4,7 @@ import { promisify } from "util";
 import { join } from "path";
 import { getDateRange } from "../lib/date";
 import { format } from "date-fns";
+import { calibre } from "../lib/calibre";
 
 const write = promisify(writeFile);
 
@@ -15,5 +16,17 @@ metrics.dateRange = getDateRange(metrics.desktop.map(m => m.createdAt))
   .join("–");
 
 console.log("date range", metrics.dateRange);
+interface Page {
+  uuid: string;
+  name: string;
+  url: string;
+  canonical: boolean;
+}
+(calibre("site pages") as Promise<Page[]>).then(pages => {
+  metrics.pages = pages;
 
-write(join(__dirname, "dashboard-data.json"), JSON.stringify(metrics, null, 2));
+  write(
+    join(__dirname, "dashboard-data.json"),
+    JSON.stringify(metrics, null, 2)
+  );
+});
