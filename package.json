@@ -9,6 +9,7 @@
   "license": "MIT",
   "scripts": {
     "start": "yarn gen-data && parcel src/dashboard/index.html --port 5000",
+    "prebuild": "[ -z \"$CALIBRE_API_TOKEN\" ] && echo \"No API token\"",
     "build": "yarn gen-data && parcel build src/dashboard/index.html",
     "clean": "rm -rf ./dist",
     "fetch-snapshots": "ts-node --files src/scripts/fetch-snapshots.ts",
