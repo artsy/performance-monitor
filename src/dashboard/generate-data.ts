@@ -22,11 +22,15 @@ interface Page {
   url: string;
   canonical: boolean;
 }
-(calibre("site pages") as Promise<Page[]>).then(pages => {
-  metrics.pages = pages;
+(calibre("site pages") as Promise<Page[]>)
+  .then(pages => {
+    metrics.pages = pages;
 
-  write(
-    join(__dirname, "dashboard-data.json"),
-    JSON.stringify(metrics, null, 2)
-  );
-});
+    write(
+      join(__dirname, "dashboard-data.json"),
+      JSON.stringify(metrics, null, 2)
+    );
+  })
+  .catch(() => {
+    console.error("Fetching calibre site pages failed");
+  });

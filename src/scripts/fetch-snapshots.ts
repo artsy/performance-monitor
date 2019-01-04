@@ -41,11 +41,19 @@ const fetchSnapshotData = (snapshotId: number) =>
 
 (async () => {
   console.log("fetching new snapshots...");
-  const newSnapshots = (differenceBy(
-    await fetchSnapshots(),
-    db.get("snapshots").value(),
-    "iid"
-  ) as unknown) as CalibreSnapshotStatus[];
+  let newSnapshots: CalibreSnapshotStatus[] = [];
+
+  try {
+    newSnapshots = (differenceBy(
+      await fetchSnapshots(),
+      db.get("snapshots").value(),
+      "iid"
+    ) as unknown) as CalibreSnapshotStatus[];
+  } catch {
+    console.error("Failed to fetch new snapshots");
+    process.exit(1);
+  }
+
   console.log(`Found ${newSnapshots.length} new snapshots`);
 
   await Promise.all(
