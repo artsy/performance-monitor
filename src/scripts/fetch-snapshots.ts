@@ -3,11 +3,18 @@ import FileSync from "lowdb/adapters/FileSync";
 import { join } from "path";
 import { differenceBy } from "lodash";
 import { calibre } from "../lib/calibre";
+import { existsSync, writeFileSync as write } from "fs";
 
 const adapter = new FileSync(join(process.cwd(), "data", "snapshot-db.json"));
 const db = low(adapter);
 
 db.defaults({ snapshots: [] }).write();
+
+let dotEnv = join(process.cwd(), ".env");
+if (!existsSync(dotEnv)) {
+  console.log("Creating env file");
+  write(dotEnv, `CALIBRE_API_TOKEN=${process.env.CALIBRE_API_TOKEN}`);
+}
 
 interface CalibreSnapshotStatus {
   iid: number;
