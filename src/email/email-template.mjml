@@ -19,9 +19,8 @@
           Welcome to Artsy's bi-weekly web performance report. The purpose of this communication is to
           build a culture and provide transparency around the state of performance at Artsy. In 2017 Google performed
           a study<sup style="font-weight: bold; font-size: 12px;">1</sup> that concluded at a page load time of 3 seconds
-          the probability bounce increases by 32%. At 5 seconds it goes up to <i>90%</i>. By 10 seconds the probability of
-          a user bouncing is 123%. Decreasing the probability of our users leaving due to performance delays is critical
-          to increasing user engagement.
+          the probability bounce increases by 32%. At 5 seconds it goes up to <i>90%</i>. Decreasing the probability of our
+          users leaving due to performance delays is critical to increasing user engagement.
         </mj-text>
       </mj-column>
     </mj-section>
@@ -44,43 +43,47 @@
           For this reason these numbers are low for our average case, but a good representation of what someone with
           a slower device or poor connection would experience.
         </mj-text>
+        <mj-text font-family="TimesNewRomanPSMT" font-size="16px" line-height="20px">
+          The scores are out of 100. Higher is better. When the delta (small number below the main number) is green
+          that represents an improvement. Red represents a degredation. Deltas, like all data in this report, are calculated
+          over a two week period. The color of the outer ring represents the health of the score according to Google's recommendations.
+        </mj-text>
+
       </mj-column>
     </mj-section>
 
     <% _.chunk(pages, 3).forEach(group=> { %>
     <mj-section padding-left="10px">
-      <mj-group>
 
-        <mj-column background-color="#f8f8f8" border-right="10px solid white" border-bottom="10px solid white" padding-bottom="10px">
-          <mj-text font-size="16px" padding-top="15px" align="center">
-            <%= group[0].name %>
-          </mj-text>
-          <mj-image src="<%= url %><%= group[0].img %>" alt="Score" padding-bottom="20px" />
-        </mj-column>
+      <mj-column background-color="#f8f8f8" border-right="10px solid white" border-bottom="10px solid white" padding-bottom="10px">
+        <mj-text font-size="16px" padding-top="15px" align="center">
+          <%= group[0].name %>
+        </mj-text>
+        <mj-image src="<%= url %><%= group[0].img %>" alt="Score" padding-bottom="20px" />
+      </mj-column>
 
-        <% if(group.length> 1) { %>
-        <mj-column background-color="#f8f8f8" border-right="10px solid white" border-bottom="10px solid white" padding-bottom="10px">
-          <mj-text font-size="16px" padding-top="15px" align="center">
-            <%= group[1].name %>
-          </mj-text>
-          <mj-image src="<%= url %><%= group[1].img %>" alt="Score" padding-bottom="20px" />
-        </mj-column>
-        <% } else { %>
-        <mj-column></mj-column>
-        <% } %>
+      <% if(group.length> 1) { %>
+      <mj-column background-color="#f8f8f8" border-right="10px solid white" border-bottom="10px solid white" padding-bottom="10px">
+        <mj-text font-size="16px" padding-top="15px" align="center">
+          <%= group[1].name %>
+        </mj-text>
+        <mj-image src="<%= url %><%= group[1].img %>" alt="Score" padding-bottom="20px" />
+      </mj-column>
+      <% } else { %>
+      <mj-column></mj-column>
+      <% } %>
 
-        <% if(group.length> 2) { %>
-        <mj-column background-color="#f8f8f8" border-right="10px solid white" border-bottom="10px solid white" padding-bottom="10px">
-          <mj-text font-size="16px" padding-top="15px" align="center">
-            <%= group[2].name %>
-          </mj-text>
-          <mj-image src="<%= url %><%= group[2].img %>" alt="Score" padding-bottom="20px" />
-        </mj-column>
-        <% } else { %>
-        <mj-column></mj-column>
-        <% } %>
+      <% if(group.length> 2) { %>
+      <mj-column background-color="#f8f8f8" border-right="10px solid white" border-bottom="10px solid white" padding-bottom="10px">
+        <mj-text font-size="16px" padding-top="15px" align="center">
+          <%= group[2].name %>
+        </mj-text>
+        <mj-image src="<%= url %><%= group[2].img %>" alt="Score" padding-bottom="20px" />
+      </mj-column>
+      <% } else { %>
+      <mj-column></mj-column>
+      <% } %>
 
-      </mj-group>
     </mj-section>
     <% }); %>
 
@@ -97,15 +100,23 @@
           Performance breakdown by page
         </mj-text>
         <mj-text font-family="TimesNewRomanPSMT" font-size="16px" line-height="20px">
-          The detailed breakdown focuses on three specific metrics. <b>First contentful paint</b>
-          is how fast the first image or piece of text renders on the screen. <b>First meaningful paint</b>
+          The detailed breakdown focuses on three specific metrics. <b>First contentful paint (FCP)</b>
+          is how fast the first image or piece of text renders on the screen. <b>First meaningful paint (FMP)</b>
           communicates when the things we care about (headline text, images, other above the fold content) renders.
           This is the point at which the page starts providing useful context or value to the user. Lastly, <b>speed index</b>
           describes how long it feels like it takes the page to become visually complete.
         </mj-text>
-        <mj-text color="#666666">
-          ▼ Performance goal
+
+        <mj-text font-family="TimesNewRomanPSMT" font-size="16px" line-height="20px">
+          The graphic below shows how to read this metric graphic.
         </mj-text>
+
+        <!-- <mj-text color="#666666">
+          ▼ Performance goal
+        </mj-text> -->
+
+        <mj-image src="<%= legend %>" />
+
       </mj-column>
     </mj-section>
 
@@ -115,6 +126,13 @@
         <mj-text font-size="22px" font-family="TimesNewRomanPSMT">
           <%= page.name %>
         </mj-text>
+
+        <% if(page.description) { %>
+        <mj-text font-family="TimesNewRomanPSMT" font-size="16px" line-height="20px">
+          <%= page.description %>
+        </mj-text>
+        <% } %>
+
         <% page.metrics.forEach(metric => { %>
         <mj-text font-family="HelveticaNeue" font-size="14px">
           <%= _.capitalize(metric.label) %>

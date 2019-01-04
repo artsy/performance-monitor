@@ -195,26 +195,37 @@ const renderMetricBar = (metric: any) => {
   const finalTemplate = mjmlTemplate({
     url: BUCKET ? `https://s3.amazonaws.com/${BUCKET}/${BUCKET_FOLDER}` : "",
     logo: `https://s3.amazonaws.com/${BUCKET}/Artsy_Logo_Full_Black_Jpeg_Small.jpg`,
-    redDot: "red-dot.png",
-    greenDot: "green-dot.png",
-    yellowDot: "yellow-dot.png",
-    dotSize: DOT_SIZE,
+    legend: `https://s3.amazonaws.com/${BUCKET}/bar-description.jpg`,
     dateRange,
     pages: [
       {
         name: "Artist",
         img: "artist-gauge.png",
-        metrics: formatMetrics("artist", artistPage)
+        metrics: formatMetrics("artist", artistPage),
+        description: `
+          The artist page is within a second of goal on two of our key metrics. <b>FMP</b> is reported as well below average,
+          but this is largely do to unoptimized image loads. 
+        `
       },
       {
         name: "Artwork",
         img: "artwork-gauge.png",
-        metrics: formatMetrics("artwork", artworkPage)
+        metrics: formatMetrics("artwork", artworkPage),
+        description: `
+          The artwork page has surpassed our performance goals for <b>FCP</b> and <b>Speed index</b> for the last two weeks.
+          This win is offset by the large <b>FMP</b>. Like the Artist page, the <b>FMP</b> is being pushed out due to unoptimized
+          image loads. 
+        `
       },
       {
         name: "Article",
         img: "article-gauge.png",
-        metrics: formatMetrics("article", articlePage)
+        metrics: formatMetrics("article", articlePage),
+        description: `
+          The article page has the most room for improvement. The <b>Speed index</b> crosses over the red threshold (meaning it's slower than
+          the median site performance) at a little over 6 seconds. The <b>FCP</b> being ~3 seconds means this page in general is taking a while
+          to start rendering.
+        `
       }
     ]
   });
