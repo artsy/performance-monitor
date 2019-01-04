@@ -30,25 +30,26 @@ if (!(process.env.PATH || "").includes("./node_modules/.bin")) {
   process.env.PATH = `${process.env.PATH}:./node_modules/.bin`;
 }
 
+// Metrics grabbed from https://docs.google.com/spreadsheets/d/1d0n8ZHX_M0neBMIq6SIhMMITYF_mQE8I6jHhzu9hdr0/edit?usp=sharing
 const METRICS = [
   {
     name: "first-contentful-paint",
     top: 0,
-    mid: 2350,
+    mid: 2336,
     low: 4000,
     goal: 2000
   },
   {
     name: "first-meaningful-paint",
     top: 0,
-    mid: 2350,
+    mid: 2336,
     low: 4000,
     goal: 2500
   },
   {
     name: "speed_index",
     top: 0,
-    mid: 2200,
+    mid: 3387,
     low: 5800,
     goal: 3000
   }

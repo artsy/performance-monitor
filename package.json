@@ -51,6 +51,7 @@
   "alias": {
     "components": "./src/components",
     "dashboard": "./src/dashboard",
-    "email": "./src/email"
+    "email": "./src/email",
+    "lib": "./src/lib"
   }
 }
