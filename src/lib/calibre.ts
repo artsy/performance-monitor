@@ -36,6 +36,7 @@ export const calibre = (
     calibreProcess.on("close", code => {
       if (code !== 0 || error.length > 0) {
         console.error(cmd, "failed with ", code, error);
+        console.error(results);
         reject(error);
       } else {
         try {
