@@ -1,21 +1,17 @@
-import React from "react";
 import { promisify } from "util";
-import { spawn } from "child_process";
 import low from "lowdb";
 import FileSync from "lowdb/adapters/FileSync";
-import { differenceBy, chain, template } from "lodash";
-import { join, relative } from "path";
+import { chain, template } from "lodash";
+import { join } from "path";
 import differenceInWeeks from "date-fns/difference_in_weeks";
 import format from "date-fns/format";
-import getTime from "date-fns/get_time";
 import { writeFile, readFile, createWriteStream } from "fs";
 import repng from "repng";
-import Stats from "moving-average";
-import { Color } from "@artsy/palette";
 import { Gauge, GaugeProps } from "../components/Gauge";
 import { MetricBar, MetricBarProps } from "../components/MetricBar";
 import S3 from "aws-sdk/clients/s3";
 import uploadStream from "s3-stream-upload";
+import { getSiteMetrics } from "../metrics";
 
 let outputDir = "dist";
 let BUCKET_FOLDER = "";
@@ -59,145 +55,6 @@ const METRICS = [
 ];
 const DOT_SIZE = 10;
 
-interface CalibreSnapshotStatus {
-  iid: number;
-  htmlUrl: string;
-  client: string;
-  createdAt: string;
-  status: string;
-}
-
-interface CalibreSnapshotData {
-  snapshot: {
-    tests: Array<{ testProfile: { id: string } }>;
-  };
-  testProfiles: Array<{ id: string }>;
-}
-
-const defaultCalibreOptions: CalibreOptions = {
-  json: true,
-  site: "artsy-net"
-};
-interface CalibreOptions {
-  json?: boolean;
-  site?: string;
-}
-const calibre = (
-  args: string,
-  { json, site }: CalibreOptions = defaultCalibreOptions
-) =>
-  new Promise((resolve, reject) => {
-    const cmd = `run.env calibre ${args} --site ${site} ${
-      json ? "--json" : ""
-    }`.split(" ");
-
-    const calibreProcess = spawn(cmd[0], cmd.slice(1), {
-      cwd: process.cwd(),
-      env: process.env
-    });
-
-    let results = "";
-    let error = "";
-
-    calibreProcess.stdout.on("data", data => {
-      results += data;
-    });
-
-    calibreProcess.stderr.on("data", data => {
-      error += data;
-    });
-
-    calibreProcess.on("close", code => {
-      if (code !== 0 || error.length > 0) {
-        console.error(cmd, "failed with ", code, error);
-        reject(error);
-      } else {
-        resolve(json ? JSON.parse(results) : results);
-      }
-    });
-  });
-
-const fetchSnapshots = () =>
-  calibre(`site snapshots`) as Promise<CalibreSnapshotStatus[]>;
-
-const fetchSnapshotData = (snapshotId: number) =>
-  calibre(`site get-snapshot-metrics --snapshot ${snapshotId}`) as Promise<
-    CalibreSnapshotData
-  >;
-
-const fetchResults = (page: string) => {
-  return db
-    .get("snapshots")
-    .sortBy(s => s.iid)
-    .map(s =>
-      s.tests
-        .filter((t: any) => t.page.url.includes(page))
-        .map((t: any) => {
-          t.createdAt = s.createdAt;
-          return t;
-        })
-    )
-    .filter(s => s.length > 0)
-    .flatten()
-    .filter(s => differenceInWeeks(new Date(), new Date(s.createdAt)) <= 2)
-    .value();
-};
-
-const calculateAverage = (
-  results: any,
-  device: "desktop" | "mobile" | "mobile4g"
-) => {
-  const firstDate = results[0].createdAt;
-  const deviceString =
-    device === "desktop" ? "desktop" : device === "mobile" ? "3g" : "4g";
-  return chain(results)
-    .map(r =>
-      r.measurements.map((m: any) => ({
-        ...m,
-        createdAt: r.createdAt,
-        page: r.page.url,
-        device: r.testProfile.name
-      }))
-    )
-    .flatten()
-    .filter(m => m.device.toLowerCase().includes(deviceString))
-    .groupBy("name")
-    .map(measurements => {
-      const { name, label } = measurements[0];
-      const period = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-      const offset = getTime(firstDate);
-      const stats = Stats(period);
-      measurements.forEach(m =>
-        stats.push(getTime(m.createdAt) - offset, m.value)
-      );
-      return {
-        name,
-        label,
-        average: Math.round(stats.movingAverage()),
-        device
-      };
-    })
-    .value();
-};
-
-const filterByMetricsWeCareAbout = (avgMeasurements: any) => {
-  const metrics = [
-    "speed_index",
-    "lighthouse-performance-score",
-    "first-meaningful-paint",
-    "first-contentful-paint"
-  ];
-  return avgMeasurements
-    .filter((m: any) => metrics.includes(m.name))
-    .reduce(
-      (curr: any, prev: any) => ({
-        ...curr,
-        [prev.name]: prev
-      }),
-      {}
-    );
-};
-
 const getDateRange = (weeks: number = 2) => {
   const d = (dt: string) => format(dt, "MMM D, YYYY");
   const [firstDate, ...otherDates] = db
@@ -207,8 +64,6 @@ const getDateRange = (weeks: number = 2) => {
     .filter(date => differenceInWeeks(new Date(), date) < weeks)
     .value();
   const lastDate = otherDates.pop();
-  console.log("first date", firstDate);
-  console.log("last date", lastDate);
   return {
     firstDate,
     lastDate,
@@ -216,19 +71,15 @@ const getDateRange = (weeks: number = 2) => {
   };
 };
 
-const getSiteMetrics = (sitePattern: string, device: "desktop" | "mobile") => {
-  const results = fetchResults(sitePattern);
-  return filterByMetricsWeCareAbout(calculateAverage(results, device));
-};
-
-const renderGauge = async (score: number, filename: string) => {
+const renderGauge = async (score: number, delta: string, filename: string) => {
   const outFile = createWriteStream(join("dist", filename));
   const size = 200;
   await repng<GaugeProps>(Gauge, {
     cssLibrary: "styled-components",
     props: {
       score,
-      size
+      size,
+      delta
     },
     width: size,
     height: size
@@ -250,7 +101,8 @@ const renderGauge = async (score: number, filename: string) => {
 };
 
 // @ts-ignore
-const debug = o => console.log(o) || o;
+// const debug = o => console.log(o) || o;
+const debug = i => i;
 
 const renderMetricBar = (metric: any) => {
   const filename = `${metric.page}-${metric.name}.png`;
@@ -268,6 +120,7 @@ const renderMetricBar = (metric: any) => {
           low: metric.low
         },
         goal: metric.goal,
+        delta: metric.delta,
         width: 600
       },
       width: 600,
@@ -294,38 +147,6 @@ const renderMetricBar = (metric: any) => {
 
 // Work closure
 (async () => {
-  console.log("fetching new snapshots...");
-  const newSnapshots = (differenceBy(
-    await fetchSnapshots(),
-    db.get("snapshots").value(),
-    "iid"
-  ) as unknown) as CalibreSnapshotStatus[];
-  console.log(`Found ${newSnapshots.length} new snapshots`);
-
-  await Promise.all(
-    newSnapshots.map(async snapshot => {
-      let snapshotData: CalibreSnapshotData;
-      try {
-        snapshotData = await fetchSnapshotData(snapshot.iid);
-      } catch (err) {
-        console.error(`Failed to fetch snapshot ${snapshot.iid}`, err);
-        return;
-      }
-
-      const tests = snapshotData.snapshot.tests.map(test => {
-        // @ts-ignore
-        test.testProfile = snapshotData.testProfiles.find(
-          profile => profile.id === test.testProfile.id
-        );
-        return test;
-      });
-
-      db.get("snapshots")
-        .push({ ...snapshot, tests })
-        .write();
-    })
-  );
-
   const { dateRange, firstDate, lastDate } = getDateRange();
 
   const f = (date: any) => format(date, "DD-MM-YYYY");
@@ -341,27 +162,28 @@ const renderMetricBar = (metric: any) => {
 
   renderGauge(
     artistPage["lighthouse-performance-score"].average,
+    artistPage["lighthouse-performance-score"].delta,
     "artist-gauge.png"
   );
   renderGauge(
     artworkPage["lighthouse-performance-score"].average,
+    artworkPage["lighthouse-performance-score"].delta,
     "artwork-gauge.png"
   );
   renderGauge(
     articlePage["lighthouse-performance-score"].average,
+    articlePage["lighthouse-performance-score"].delta,
     "article-gauge.png"
   );
-
-  console.log(artistPage);
 
   const formatMetrics = (page: string, pageMetrics: Array<{ name: string }>) =>
     chain(Object.values(pageMetrics))
       .filter(metric => metric.name !== "lighthouse-performance-score")
       .sortBy(["name"])
       .map((metric: any) => ({
-        page,
         ...metric,
-        ...METRICS.find(({ name }) => name === metric.name)
+        ...METRICS.find(({ name }) => name === metric.name),
+        page
       }))
       .map((metric: any) => ({
         ...metric,
