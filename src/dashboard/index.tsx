@@ -86,12 +86,15 @@ const Grid = styled.div`
 
 interface CellProps {
   score: number;
+  url: string;
 }
-const Cell = ({ score }: CellProps) => (
+const Cell = ({ score, url }: CellProps) => (
   <Flex alignItems="center">
-    <Sans size="5" weight="medium" mr={2} color={scoreColor(score)}>
-      {score}
-    </Sans>
+    <a style={{ textDecoration: "none" }} href={url}>
+      <Sans size="5" weight="medium" mr={2} color={scoreColor(score)}>
+        {score}
+      </Sans>
+    </a>
   </Flex>
 );
 
@@ -135,6 +138,12 @@ const App = () => (
               s => s.page === snapshot.page
             );
 
+            let { uuid } = data.pages.find(s => s.name === snapshot.page) as {
+              name: string;
+              uuid: string;
+            };
+            const url = `https://calibreapp.com/artsy/artsy-net?page=${uuid}`;
+
             return (
               <>
                 <Sans
@@ -146,12 +155,14 @@ const App = () => (
                   {snapshot.page}
                 </Sans>
                 <Cell
+                  url={url}
                   score={Math.round(
                     snapshot.metrics["lighthouse-performance-score"].value
                   )}
                 />
                 {mobileSnapshot ? (
                   <Cell
+                    url={url}
                     score={Math.round(
                       mobileSnapshot.metrics["lighthouse-performance-score"]
                         .value
@@ -162,6 +173,7 @@ const App = () => (
                 )}
                 {mobile4gSnapshot ? (
                   <Cell
+                    url={url}
                     score={Math.round(
                       mobile4gSnapshot.metrics["lighthouse-performance-score"]
                         .value
