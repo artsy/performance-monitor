@@ -19,7 +19,7 @@
           Welcome to Artsy's bi-weekly web performance report. The purpose of this communication is to
           build a culture and provide transparency around the state of performance at Artsy. In 2017 Google performed
           a study<sup style="font-weight: bold; font-size: 12px;">1</sup> that concluded at a page load time of 3 seconds
-          the probability bounce increases by 32%. At 5 seconds it goes up to <i>90%</i>. Decreasing the probability of our
+          the probability of bounce increases by 32%. At 5 seconds it goes up to <i>90%</i>. Decreasing the probability of our
           users leaving due to performance delays is critical to increasing user engagement.
         </mj-text>
       </mj-column>
@@ -102,7 +102,7 @@
         <mj-text font-family="TimesNewRomanPSMT" font-size="16px" line-height="20px">
           The detailed breakdown focuses on three specific metrics. <b>First contentful paint (FCP)</b>
           is how fast the first image or piece of text renders on the screen. <b>First meaningful paint (FMP)</b>
-          communicates when the things we care about (headline text, images, other above the fold content) renders.
+          communicates when the things we care about (headline text, images, other above the fold content) render.
           This is the point at which the page starts providing useful context or value to the user. Lastly, <b>speed index</b>
           describes how long it feels like it takes the page to become visually complete.
         </mj-text>
