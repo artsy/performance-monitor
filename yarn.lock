@@ -5198,11 +5198,6 @@ mkdirp@0.5.1, mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
   dependencies:
     minimist "0.0.8"
 
-moving-average@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/moving-average/-/moving-average-1.0.0.tgz#b1247ba8dd2d7927c619f1eac8036cf933d65adc"
-  integrity sha512-97cgMz0U2zciiDp4xRl/n+MYgrm9l7UiYbtsBLPr0rhw6KH3m4LyK2w4d96V6+UwKo+ph7KtQSoL2qgnqZVgvA==
-
 ms@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
@@ -7407,6 +7402,11 @@ static-module@^2.2.0:
     shallow-copy "~0.0.1"
     static-eval "^2.0.0"
     through2 "~2.0.3"
+
+stats-analysis@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/stats-analysis/-/stats-analysis-2.0.0.tgz#f45c516ff5c5d26c26f2d8c7b3d57592802d6187"
+  integrity sha1-9FxRb/XF0mwm8tjHs9V1koAtYYc=
 
 "statuses@>= 1.4.0 < 2":
   version "1.5.0"

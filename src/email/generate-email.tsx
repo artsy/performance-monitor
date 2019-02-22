@@ -13,6 +13,11 @@ import S3 from "aws-sdk/clients/s3";
 import uploadStream from "s3-stream-upload";
 import { getSiteMetrics } from "../metrics";
 
+/**
+ * The number of weeks that the email covers
+ */
+const WEEKS_TO_MEASURE = 4;
+
 let outputDir = "dist";
 let BUCKET_FOLDER = "";
 let BUCKET = "artsy-performance-dashboard";
@@ -30,33 +35,38 @@ if (!(process.env.PATH || "").includes("./node_modules/.bin")) {
   process.env.PATH = `${process.env.PATH}:./node_modules/.bin`;
 }
 
+enum METRIC {
+  FCP = "first-contentful-paint",
+  FMP = "first-meaningful-paint",
+  SI = "speed_index"
+}
+
 // Metrics grabbed from https://docs.google.com/spreadsheets/d/1d0n8ZHX_M0neBMIq6SIhMMITYF_mQE8I6jHhzu9hdr0/edit?usp=sharing
 const METRICS = [
   {
-    name: "first-contentful-paint",
+    name: METRIC.FCP,
     top: 0,
     mid: 2336,
     low: 4000,
     goal: 2000
   },
   {
-    name: "first-meaningful-paint",
+    name: METRIC.FMP,
     top: 0,
     mid: 2336,
     low: 4000,
     goal: 2500
   },
   {
-    name: "speed_index",
+    name: METRIC.SI,
     top: 0,
     mid: 3387,
     low: 5800,
     goal: 3000
   }
 ];
-const DOT_SIZE = 10;
 
-const getDateRange = (weeks: number = 2) => {
+const getDateRange = (weeks: number = WEEKS_TO_MEASURE) => {
   const d = (dt: string) => format(dt, "MMM D, YYYY");
   const [firstDate, ...otherDates] = db
     .get("snapshots")
@@ -105,7 +115,7 @@ const renderGauge = async (score: number, delta: string, filename: string) => {
 // const debug = o => console.log(o) || o;
 const debug = i => i;
 
-const renderMetricBar = (metric: any) => {
+const renderMetricBar = (metric: any, deltaOverride?: string) => {
   const filename = `${metric.page}-${metric.name}.png`;
   const outFile = createWriteStream(join("dist", filename));
 
@@ -121,7 +131,7 @@ const renderMetricBar = (metric: any) => {
           low: metric.low
         },
         goal: metric.goal,
-        delta: metric.delta,
+        delta: deltaOverride || metric.delta,
         width: 600
       },
       width: 600,
@@ -177,7 +187,11 @@ const renderMetricBar = (metric: any) => {
     "article-gauge.png"
   );
 
-  const formatMetrics = (page: string, pageMetrics: Array<{ name: string }>) =>
+  const formatMetrics = (
+    page: string,
+    pageMetrics: Array<{ name: string }>,
+    deltaOverrides?: { [metric in METRIC]?: string }
+  ) =>
     chain(Object.values(pageMetrics))
       .filter(metric => metric.name !== "lighthouse-performance-score")
       .sortBy(["name"])
@@ -188,33 +202,53 @@ const renderMetricBar = (metric: any) => {
       }))
       .map((metric: any) => ({
         ...metric,
-        img: renderMetricBar(metric)
+        img: renderMetricBar(
+          metric,
+          deltaOverrides ? deltaOverrides[metric.name as METRIC] : undefined
+        )
       }))
       .value();
 
   const finalTemplate = mjmlTemplate({
     url: BUCKET ? `https://s3.amazonaws.com/${BUCKET}/${BUCKET_FOLDER}` : "",
     logo: `https://s3.amazonaws.com/${BUCKET}/Artsy_Logo_Full_Black_Jpeg_Small.jpg`,
-    legend: `https://s3.amazonaws.com/${BUCKET}/bar-description.jpg`,
+    legend: `https://s3.amazonaws.com/${BUCKET}/bar-description-2.jpg`,
     dateRange,
+    intro: `
+      Welcome to Artsy's web performance report. The purpose of this communication is to provide transparency around 
+      the state of performance at Artsy. This report has been extended to coincide with the start of Q1.       
+      <br/><br/>
+      All the data in this report is from a mid-tier mobile device on a 3G network. We're using this as a baseline to 
+      match Google's current performance recommendations. Performance on 4G networks with upper tier devices and desktop
+      significantly outperform the below results. 
+      <br/><br/>
+      The deltas listed in this report (green or red numbers) cover a month long period and aren't expected to align
+      with numbers from the last report. If you have questions about these metrics or about performance in
+      general please join us in the <b>#performance</b> slack channel. 
+    `,
+    pageSummary: `
+      The metrics below are Google's <a href="https://developers.google.com/web/tools/lighthouse/v3/scoring#perf">Lighthouse performance score</a> for each
+      of the associated page types. This score goes from 0 (being the worst) to 100 (being the best). It's an aggregate of multiple weighted
+      metrics that gives a rough indication of the overall performance health of a webpage. 
+    `,
     pages: [
       {
         name: "Artist",
         img: "artist-gauge.png",
         metrics: formatMetrics("artist", artistPage),
         description: `
-          The artist page is within a second of goal on two of our key metrics. <b>FMP</b> is reported as well below average,
-          but this is largely do to unoptimized image loads. 
-        `
+          Artist page has remained relatively stable over the last month. We're still underperforming relative to our goals. The deltas
+          from this report is based on the last month of data, not just the period covered by the last report.         `
       },
       {
         name: "Artwork",
         img: "artwork-gauge.png",
         metrics: formatMetrics("artwork", artworkPage),
         description: `
-          The artwork page has surpassed our performance goals for <b>FCP</b> and <b>Speed index</b> for the last two weeks.
-          This win is offset by the large <b>FMP</b>. Like the Artist page, the <b>FMP</b> is being pushed out due to unoptimized
-          image loads. 
+          We've seen a performance degradation in the last month relating to the release of the responsive
+          (and completely rebuilt) artwork page. Mobile 4G and desktop haven't seen the same level of performance degradations.
+          These numbers may be slightly skewed due to ongoing intermittent elasticsearch issues. We'll continue to
+          investigate and optimize artwork page performance.
         `
       },
       {
@@ -222,9 +256,7 @@ const renderMetricBar = (metric: any) => {
         img: "article-gauge.png",
         metrics: formatMetrics("article", articlePage),
         description: `
-          The article page has the most room for improvement. The <b>Speed index</b> crosses over the red threshold (meaning it's slower than
-          the median site performance) at a little over 6 seconds. The <b>FCP</b> being ~3 seconds means this page in general is taking a while
-          to start rendering.
+          Article page performance remained relatively stable over the last two months. More analysis is required for the increase
         `
       }
     ]

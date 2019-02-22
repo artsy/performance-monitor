@@ -16,11 +16,7 @@
           <%= dateRange %>
         </mj-text>
         <mj-text font-family="TimesNewRomanPSMT" font-size="16px" line-height="20px">
-          Welcome to Artsy's bi-weekly web performance report. The purpose of this communication is to
-          build a culture and provide transparency around the state of performance at Artsy. In 2017 Google performed
-          a study<sup style="font-weight: bold; font-size: 12px;">1</sup> that concluded at a page load time of 3 seconds
-          the probability of bounce increases by 32%. At 5 seconds it goes up to <i>90%</i>. Decreasing the probability of our
-          users leaving due to performance delays is critical to increasing user engagement.
+          <%= intro %>
         </mj-text>
       </mj-column>
     </mj-section>
@@ -37,16 +33,7 @@
           Overall performance scores by page
         </mj-text>
         <mj-text font-family="TimesNewRomanPSMT" font-size="16px" line-height="20px">
-          These scores reflect Google's lighthouse performance score measured against a mid-ranged mobile device on a 3G network.
-          While our average user connects via a 4G connection, Google still measures mobile speeds via 3G connections. They project
-          that 70% of global connections will be 3G until 2020<sup style="font-weight: bold; font-size: 12px">2</sup>.
-          For this reason these numbers are low for our average case, but a good representation of what someone with
-          a slower device or poor connection would experience.
-        </mj-text>
-        <mj-text font-family="TimesNewRomanPSMT" font-size="16px" line-height="20px">
-          The scores are out of 100. Higher is better. When the delta (small number below the main number) is green
-          that represents an improvement. Red represents a degredation. Deltas, like all data in this report, are calculated
-          over a two week period. The color of the outer ring represents the health of the score according to Google's recommendations.
+          <%= pageSummary %>
         </mj-text>
 
       </mj-column>
@@ -151,12 +138,6 @@
 
     <mj-section padding-bottom="40px">
       <mj-column>
-        <mj-text>
-          [1]: https://www.thinkwithgoogle.com/marketing-resources/data-measurement/mobile-page-speed-new-industry-benchmarks/
-        </mj-text>
-        <mj-text>
-          [2]: https://www.thinkwithgoogle.com/data/cellular-network-connections-slow-speeds/
-        </mj-text>
         <mj-text font-family="HelveticaNeue" font-size="14px" align="center">
           Questions? Join us in <u>#performance</u>.
         </mj-text>

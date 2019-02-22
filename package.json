@@ -41,9 +41,9 @@
     "date-fns": "^1.29.0",
     "lodash": "^4.17.11",
     "lokijs": "^1.5.5",
-    "moving-average": "^1.0.0",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
+    "stats-analysis": "^2.0.0",
     "styled-components": "^4.1.1",
     "styled-system": "^3.1.11",
     "unstated": "^2.1.1"

@@ -1,14 +1,26 @@
 import FileSync from "lowdb/adapters/FileSync";
 import low from "lowdb";
 import { join } from "path";
-import { chain, merge, flow } from "lodash";
+import { chain, merge, flow, difference } from "lodash";
 import { isBefore, isEqual, isAfter, getTime, subWeeks } from "date-fns";
-import Stats from "moving-average";
+import stats from "stats-analysis";
 
 const adapter = new FileSync(join(process.cwd(), "data", "snapshot-db.json"));
 const db = low(adapter);
 
+const importantMetrics = [
+  "speed_index",
+  "lighthouse-performance-score",
+  "first-meaningful-paint",
+  "first-contentful-paint"
+];
+
 db.defaults({ snapshots: [] }).write();
+
+const debug = (input: any) => {
+  console.log(input);
+  return input;
+};
 
 const deviceFromString = (string: string) => {
   let str = string.toLowerCase();
@@ -21,7 +33,7 @@ export const getSiteMetrics = (
   sitePattern: string,
   device: "desktop" | "mobile"
 ) => {
-  const lastResults = flow([
+  const previousPeriodAverage = flow([
     site =>
       fetchDeviceTestsInRange(
         site,
@@ -40,7 +52,9 @@ export const getSiteMetrics = (
 
   for (let metric in results) {
     const { average } = results[metric];
-    const { average: lastAverage } = lastResults[metric];
+    const { average: lastAverage } = previousPeriodAverage[metric];
+
+    console.log("average", average, "lastAverage", lastAverage);
 
     let delta =
       Math.round(((average - lastAverage) / lastAverage) * 100).toString() +
@@ -140,14 +154,8 @@ const fetchDeviceTestsInRange = (
     );
 
 const filterByMetricsWeCareAbout = (avgMeasurements: any) => {
-  const metrics = [
-    "speed_index",
-    "lighthouse-performance-score",
-    "first-meaningful-paint",
-    "first-contentful-paint"
-  ];
   return avgMeasurements
-    .filter((m: any) => metrics.includes(m.name))
+    .filter((m: any) => importantMetrics.includes(m.name))
     .reduce(
       (curr: any, prev: any) => ({
         ...curr,
@@ -161,7 +169,6 @@ const calculateAverage = (
   tests: any,
   device: "desktop" | "mobile" | "mobile4g"
 ) => {
-  const firstDate = tests[0].createdAt;
   const deviceString =
     device === "desktop" ? "desktop" : device === "mobile" ? "3g" : "4g";
   return chain(tests)
@@ -177,18 +184,15 @@ const calculateAverage = (
     .filter(test => test.device.toLowerCase().includes(deviceString))
     .groupBy("name")
     .map(measurements => {
-      const { name, label, page, device } = measurements[0];
-      const period = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-      const offset = getTime(firstDate);
-      const stats = Stats(period);
-      measurements.forEach(m =>
-        stats.push(getTime(m.createdAt) - offset, m.value)
-      );
+      const { name, label, device } = measurements[0];
+      const values = measurements.map(m => m.value);
+      const inboundMeasurements = stats.filterOutliers(values);
+
       return {
         name,
         label,
-        page,
-        average: Math.round(stats.movingAverage()),
+        pages: measurements.map(m => m.page),
+        average: Math.round(stats.mean(inboundMeasurements)),
         device
       };
     })
